@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Past Paper Grader</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #f3f4f6;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .question-container {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+        }
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+        .answer-box {
+            width: 100%;
+            min-height: 8rem;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+            resize: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            line-height: 1.5rem;
+        }
+        .answer-box:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+        .submit-button {
+            padding: 0.75rem 1.5rem;
+            background-color: #3b82f6;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .submit-button:hover {
+            background-color: #2563eb;
+        }
+        .feedback {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            border: 1px solid;
+        }
+        .feedback.correct {
+            background-color: #f0fdf4;
+            color: #15803d;
+            border-color: #16a34a;
+        }
+        .feedback.incorrect {
+            background-color: #fef2f2;
+            color: #b91c1c;
+            border-color: #dc2626;
+        }
+        .feedback.partial {
+            background-color: #fefce8;
+            color: #78350f;
+            border-color: #fcd34d;
+        }
+        .mark-scheme {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #eff6ff;
+            border-radius: 0.375rem;
+            border: 1px solid #d1d8e3;
+            font-size: 0.875rem;
+            line-height: 1.5rem;
+            color: #4b5563;
+        }
+        .mark-scheme h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #1e293b;
+        }
+        .question-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 9999px;
+            background-color: #4f46e5;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-right: 1rem;
+        }
+        .view-answer-button {
+            padding: 0.5rem 1rem;
+            background-color: #a855f7;
+            color: white;
+            font-size: 0.875rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 0.5rem;
+            margin-left: 0.5rem;
+        }
+        .view-answer-button:hover {
+            background-color: #7e22ce;
+        }
+        .answer-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            z-index: 10;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+        }
+        .answer-popup h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+        .answer-popup p {
+            font-size: 1rem;
+            line-height: 1.5rem;
+            color: #4b5563;
+        }
+        .answer-popup .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+        .answer-popup .close-button:hover {
+            color: #374151;
+        }
+
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .container {
+                max-width: 100%;
+                margin: 0;
+                padding: 0;
+                border-radius: 0;
+                box-shadow: none;
+            }
+            .question-container {
+                margin-bottom: 1rem;
+                padding: 1rem;
+                border-radius: 0;
+                box-shadow: none;
+                page-break-inside: avoid;
+            }
+            .answer-box {
+                height: auto;
+                min-height: auto;
+            }
+            .submit-button, .view-answer-button {
+                display: none;
+            }
+            .feedback {
+                border: 1px solid #d1d5db;
+                margin-top: 0.5rem;
+                padding: 0.5rem;
+            }
+            .mark-scheme {
+                border: 1px solid #d1d8e3;
+                margin-top: 0.5rem;
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="container">
+        <h1 class="text-2xl font-semibold mb-6 text-gray-800">Past Paper Grader</h1>
+        <p class="text-gray-600 mb-4">Answer the questions below and click submit to get immediate feedback.</p>
+        <div id="questions-container">
+        </div>
+    </div>
+    <div id="answer-popup" class="answer-popup">
+        <span class="close-button">&times;</span>
+        <h3 id="popup-question-text">Question</h3>
+        <p id="popup-answer-text">Answer</p>
+    </div>
+    <script>
+        const questionsData = [
+            {
+                number: 1,
+                text: "William is creating a film for a school project using a digital video camera.",
+                parts: [
+                    {
+                        text: "(a) The digital video camera has a secondary storage device.",
+                        subParts: [
+                            {
+                                text: "(i) Explain why the digital video camera needs secondary storage. [2]",
+                                markScheme: "For long term/permanent/non-volatile storage // storing when the device is turned off. To store the videos / data / files. For transferring the videos (to another device)",
+                            },
+                            {
+                                text: "(ii) The digital video camera uses solid state storage. Explain why solid state storage is the most appropriate type of storage for the digital video camera. [4]",
+                                markScheme: "Portable ...e.g. device needs to be carried. Small physical size ...e.g. can fit in a small camera. Durable ...e.g. device is moved so may be dropped // won't be damaged when moving around. Reliable ...e.g. needs to work when out in the 'field'. Sufficient/large capacity. Videos are large file size // store more videos. Fast access/read/write speed ...e.g. the device will retrieve the videos without delay. Efficient power consumption ...e.g. run on battery // longer battery life",
+                            }
+                        ]
+                    },
+                    {
+                        text: "(b) William transfers the videos to a computer for editing.",
+                        subParts: [
+                            {
+                                text: "(i) The computer has 1GB of storage free. Calculate the number of videos that could be stored on the computer if each video was 100MB in size. Show your working. [2]",
+                                markScheme: "1024(1000)/100 // 10 * 100 = 1000. = 10 (videos)",
+                            },
+                            {
+                                text: "(ii) A program needs to calculate the size of files in bytes. The program must: Ask the user to input a file size in megabytes, calculate and output the number of bytes this represents in a user friendly format (e.g. 'There are 5242880 bytes in 5MB'). Write an algorithm using pseudocode to calculate the number of bytes in a given number of megabytes. [6]",
+                                markScheme: "Output asking for file size (in megabytes). Taking number of MB as input. Multiplying by 1024 or 1000. Multiplying by 1024 or 1000. Outputting the final bytes value...in an appropriate message. output 'Please enter the file size in megabytes'. input numberMB. numberKB = numberMB * 1024 (or 1000). numberBytes = numberKB * 1024 (or 1000). output 'There are ' & numberBytes & ' bytes in ' & numberMB & 'MB'",
+                            }
+                        ]
+                    },
+                    {
+                        text: "(c) William's computer has utility programs installed including automatic backup.",
+                        subParts: [
+                            {
+                                text: "(i) William can choose between a full or incremental backup. Identify the backup method William should use to backup the computer, justifying your choice. [3]",
+                                markScheme: "Incremental: Only the changes need to be backed up. The software/OS/settings are unlikely to have changed between backups. Small number of files likely to be used/edited between backups. Take less time to backup. Each backup will take less memory space to store. Full: Backup all the data/files and software. It might not take a significant time to back up entire system. He might only have a small number of files to be backed up each time. Safer as have more past versions to revert to. User may have changed settings on computer. Faster to restore the backup. Needs to do a full before he can do an incremental",
+                            },
+                            {
+                                text: "(ii) Give one additional utility program William could make use of and describe how he would use it. [3]",
+                                markScheme: "Encryption software: Scramble/encode/mix up data so it cannot be read/understood if intercepted/stolen. Defragmentation: Move free space together. Move files together. E.g. Faster access to files. (Data) compression: Reduce the file size of files // makes files smaller. To use less storage space. Faster transmission. To store more files. Anti-virus / anti-malware: To help protect computer/data against viruses/malware. To scan the computer to look for/quarantine/remove viruses/malware. Disk analysis and repair: Scan disk and look for faults. Prevent loss of data due to faulty disk. Auto-update: Checks Internet for new versions of software/OS. Downloads and installs without user interaction. Firewall: Examine ingoing and outgoing traffic. To help restrict/prevent unauthorised access over a network/external source",
+                            }
+                        ]
+                    },
+                    {
+                        text: "(d) William wants to upload his videos on the Internet and is considering releasing them under a Creative Commons license. Explain how a Creative Commons license will impact the use of William's videos by other people. [3]",
+                        markScheme: "Allows free distribution // other people can use/edit his work. Other people can redistribute his work. Can choose to restrict other people to be able to use/edit/share the videos. Work is still copyrighted // others cannot claim it as their own. No-derivative ...William can set that if others edit it they cannot redistribute it with the edits. attribution ...Can insist e.g. on having his name on it if re-used // referencing // must be credited. Can insist on non-commercial use // others cannot sell/profit from his work // personal use only.",
+                    }
+                ]
+            },
+            {
+                number: 2,
+                text: "A house has computers in each room and a central router. Every room allows both Ethernet and WiFi connections to the router.",
+                parts: [
+                    {
+                        text: "(a) Identify if the house network is a LAN (local area network) or a WAN (wide area network). Justify your choice. [3]",
+                        markScheme: "LAN. Small distance/geographical area e.g. same building/house. Connected by own hardware/infrastructure // not connecting through Internet // no hired/third-party infrastructure // dedicated connection",
+                    },
+                    {
+                        text: "(b) The following table has descriptions of Ethernet and WiFi. Tick (✔) one box in each row to identify if the description is more appropriate for Ethernet or WiFi.",
+                        subParts: [
+                            {
+                                text: "A wired connection",
+                                markScheme: "Ethernet",
+                            },
+                            {
+                                text: "More likely to be affected by interference",
+                                markScheme: "WiFi",
+                            },
+                            {
+                                text: "Data can be transmitted at a faster speed",
+                                markScheme: "Ethernet",
+                            },
+                             {
+                                text: "Wireless transmission",
+                                markScheme: "WiFi",
+                            },
+                            {
+                                text: "Shorter transmission range before data is lost",
+                                markScheme: "WiFi",
+                            }
+                        ]
+                    },
+                    {
+                        text: "(c) (i) Describe the purpose of the router in the house's network. [2]",
+                        markScheme: "Directs data/packets. Sends data to the correct destination / computer / device. Connects different networks. Assigns IP addresses.",
+                    },
+                    {
+                        text: "(ii) Identify two additional items of network hardware, apart from cables and a router, that may be used within the house network. [2]",
+                        markScheme: "Switch. Network Interface Card (NIC) / Wireless Network Interface Card. Access Point. Repeater. Hub. Bridge. Modem.",
+                    }
+                ]
+            },
+            {
+                number: 3,
+                text: "A local café offers its customers free access to a wireless network. When customers join the wireless network, they are able to access a website that the café has created.  ",
+                parts: [
+                    {
+                        text: "(a) Describe the difference between the Internet and the World Wide Web.                                                                                                                                                           [4]",
+                        markScheme: "The Internet is the physical network / infrastructure. The World Wide Web is a collection of websites / pages / documents. The Internet uses a variety of protocols. The WWW uses HTTP / HTTPS. The Internet can be used for many things e.g. email, WWW. The WWW is a subset of the Internet.",
+                    },
+                    {
+                        text: "(b) The café uses HTML to create its website.                                                                                                                                                                                          (i)  Explain what is meant by HTML.                                                                                                                                                                                                                         [2]",
+                        markScheme: "Hyper Text Markup Language.  A language.  Used to structure / create / format a web page.  Consists of tags.",
+                    },
+                    {
+                        text: "(ii)  The café’s website contains a form. The HTML code for the form is shown below:  <form action=“submit.php” method=“post”>  <label for=“name”>Name:</label>  <input type=“text” id=“name” name=“name”><br>  <label for=“email”>Email:</label>  <input type=“text” id=“email” name=“email”><br>  <input type=“submit” value=“Submit”> </form>  Explain the purpose of the following parts of the HTML code:  action=“submit.php”                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             [2]",
+                        markScheme: "Specifies the location/file.  That processes the form/data.  The data is sent to submit.php.",
+                    },
+                    {
+                        text: "method=“po
